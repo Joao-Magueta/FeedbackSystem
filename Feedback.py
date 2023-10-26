@@ -1,16 +1,24 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
-from textblob import TextBlob
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from googletrans import Translator
 
+# Função para traduzir o feedback do português para o inglês
+def traduzir_para_ingles(texto):
+    translator = Translator()
+    translated = translator.translate(texto, src='pt', dest='en')
+    return translated.text
 
-#Analise de sentimento
+# Função para análise de sentimento 
 def analisar_sentimento(texto):
-    analysis = TextBlob(texto)
-    polaridade = analysis.sentiment.polarity
-    if polaridade > 0:
+    analyzer = SentimentIntensityAnalyzer()
+    sentiment = analyzer.polarity_scores(texto)
+    compound_score = sentiment['compound']
+    
+    if compound_score >= 0.05:
         return "positivo"
-    elif polaridade < 0:
+    elif compound_score <= -0.05:
         return "negativo"
     else:
         return "neutro"
@@ -25,17 +33,18 @@ def submit():
     email = var.get()
     comentario = textcomment.get(1.0, END)
 
+    comentario_ingles = traduzir_para_ingles(comentario)
     
-    sentimento = analisar_sentimento(comentario)
-# Mensagem com base na análise de sentimento
+    sentimento = analisar_sentimento(comentario_ingles)
+    
+    # Mensagem com base na análise de sentimento
     messagebox.showinfo(title='Enviar Feedback', message=f'Obrigado pelo seu feedback, seus comentários foram enviados.\nAnálise de Sentimento: {sentimento}')
     clear()
-    
-    #FRONT
 
 root = Tk()
 frame_header = ttk.Frame(root)
 frame_header.pack()
+
 logo = PhotoImage(file='logo.gif').subsample(2, 2)
 logolabel = ttk.Label(frame_header, text='logomarca', image=logo)
 logolabel.grid(row=0, column=0, rowspan=2)
@@ -73,4 +82,4 @@ textcomment.config(wrap='word')
 submitbutton = ttk.Button(frame_content, text='Enviar', command=submit).grid(row=4, column=0, sticky='e')
 clearbutton = ttk.Button(frame_content, text='Limpar', command=clear).grid(row=4, column=1, sticky='w')
 
-mainloop()
+root.mainloop()
