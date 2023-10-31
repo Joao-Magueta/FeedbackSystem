@@ -1,8 +1,103 @@
 from tkinter import *
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from googletrans import Translator
+import sqlite3 as sql
+
+# Conectar ao banco de dados SQLite
+con = sql.connect("FeedbackDB.db")
+cur = con.cursor()
+
+# Variável global para controlar o login do administrador
+admin_logged_in = False
+
+# Função para realizar o login
+def login():
+    global admin_logged_in
+    username = username_var.get()
+    password = password_var.get()
+    cur.execute("SELECT * FROM Administrador WHERE NomeUsuario=? AND Senha=?", (username, password))
+    if cur.fetchone():
+        admin_logged_in = True
+        login_win.destroy()  # Fecha a janela de login após o login bem-sucedido
+        admin_window()
+    else:
+        messagebox.showerror(title='Login', message='Login failed')
+
+# Função para a área de administração
+def admin_window():
+    if admin_logged_in:
+        admin_win = Toplevel(root)
+        admin_win.title("Área de Admin")
+        
+        Label(admin_win, text="Empresa ID").grid(row=0, column=0)
+        Label(admin_win, text="Nome Empresa").grid(row=1, column=0)
+        Label(admin_win, text="Descricao Empresa").grid(row=2, column=0)
+        Label(admin_win, text="Contato").grid(row=3, column=0)
+        
+        empresa_id_var = StringVar()
+        nome_empresa_var = StringVar()
+        descricao_empresa_var = StringVar()
+        contato_var = StringVar()
+        
+        empresa_id_entry = Entry(admin_win, textvariable=empresa_id_var)
+        nome_empresa_entry = Entry(admin_win, textvariable=nome_empresa_var)
+        descricao_empresa_entry = Entry(admin_win, textvariable=descricao_empresa_var)
+        contato_entry = Entry(admin_win, textvariable=contato_var)
+        
+        empresa_id_entry.grid(row=0, column=1)
+        nome_empresa_entry.grid(row=1, column=1)
+        descricao_empresa_entry.grid(row=2, column=1)
+        contato_entry.grid(row=3, column=1)
+        
+        Button(admin_win, text="Add Empresa", command=add_empresa).grid(row=4, column=0, columnspan=2)
+    else:
+        messagebox.showerror(title='Acesso Negado', message='Você deve fazer o login como administrador para acessar esta área.')
+
+
+# Função para abrir a janela de login
+def open_login_window():
+    global login_win
+    login_win = Toplevel(root)
+    login_win.title("Login")
+    
+    Label(login_win, text="Username").grid(row=0, column=0)
+    Label(login_win, text="Password").grid(row=1, column=0)
+    
+    global username_var
+    global password_var
+    username_var = StringVar()
+    password_var = StringVar()
+    
+    username_entry = Entry(login_win, textvariable=username_var)
+    password_entry = Entry(login_win, textvariable=password_var, show="*")
+    
+    username_entry.grid(row=0, column=1)
+    password_entry.grid(row=1, column=1)
+    
+    Button(login_win, text="Login", command=login).grid(row=2, column=0, columnspan=2)
+
+
+# Função para registrar um usuário
+def register_user():
+    username = username_var.get()
+    password = password_var.get()
+    cur.execute("SELECT COUNT(*) FROM CredenciaisEmpresa")
+    count = cur.fetchone()[0] + 1
+    cur.execute("INSERT INTO CredenciaisEmpresa (EmpresaID, NomeUsuario, Senha) VALUES (?, ?, ?)", (count, username, password))
+    cur.execute("INSERT INTO Empresa (EmpresaID) VALUES (?)", (count,))
+    con.commit()
+    messagebox.showinfo(title='Register User', message='User registered successfully')
+
+# Função para adicionar uma empresa
+def add_empresa():
+    empresa_id = empresa_id_var.get()
+    nome_empresa = nome_empresa_var.get()
+    descricao_empresa = descricao_empresa_var.get()
+    contato = contato_var.get()
+    cur.execute("UPDATE Empresa SET NomeEmpresa=?, DescricaoEmpresa=?, Contato=? WHERE EmpresaID=?", (nome_empresa, descricao_empresa, contato, empresa_id))
+    con.commit()
+    print("Empresa added successfully")
 
 # Função para traduzir o feedback do português para o inglês
 def traduzir_para_ingles(texto):
@@ -61,7 +156,14 @@ frame_content.pack()
 
 myvar = StringVar()
 var = StringVar()
+username_var = StringVar()
+password_var = StringVar()
+empresa_id_var = StringVar()
+nome_empresa_var = StringVar()
+descricao_empresa_var = StringVar()
+contato_var = StringVar()
 
+admin_button = ttk.Button(frame_content, text='Area dos Administradores', command=open_login_window).grid(row=5, column=1, sticky='w')
 namelabel = ttk.Label(frame_content, text='Nome')
 namelabel.grid(row=0, column=0, padx=5, sticky='sw')
 entry_name = ttk.Entry(frame_content, width=18, font=('Arial', 14), textvariable=myvar)
@@ -81,5 +183,7 @@ textcomment.config(wrap='word')
 
 submitbutton = ttk.Button(frame_content, text='Enviar', command=submit).grid(row=4, column=0, sticky='e')
 clearbutton = ttk.Button(frame_content, text='Limpar', command=clear).grid(row=4, column=1, sticky='w')
+
+
 
 root.mainloop()
