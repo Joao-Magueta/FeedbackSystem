@@ -1,17 +1,19 @@
 -- Tabela para Empresa
 CREATE TABLE Empresa (
-    ID INTEGER PRIMARY KEY AUTOINCREMENT,
-    NomeEmpresa TEXT,
+    EmpresaID INTEGER PRIMARY KEY AUTOINCREMENT,
+    NomeEmpresa NVARCHAR(255),
     DescricaoEmpresa TEXT,
-    Contato TEXT
+    Contato NVARCHAR(255)
 );
 
 -- Tabela para Credenciais da Empresa
 CREATE TABLE CredenciaisEmpresa (
-    EmpresaID INTEGER PRIMARY KEY,
-    NomeUsuario TEXT,
-    Senha TEXT
+    EmpresaID INTEGER,
+    NomeUsuario NVARCHAR(255),
+    Senha NVARCHAR(255),
+    FOREIGN KEY(EmpresaID) REFERENCES Empresa(EmpresaID)
 );
+
 
 -- Tabela para Produto
 CREATE TABLE Produto (

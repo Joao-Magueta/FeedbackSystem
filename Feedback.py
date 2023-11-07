@@ -11,6 +11,7 @@ cur = con.cursor()
 # Variável global para controlar o login do administrador
 admin_logged_in = False
 
+
 # Função para realizar o login
 def login():
     global admin_logged_in
@@ -26,6 +27,8 @@ def login():
 
 # Função para a área de administração
 def admin_window():
+    global usuario_var
+    global senha_var
     if admin_logged_in:
         admin_win = Toplevel(root)
         admin_win.title("Área de Admin")
@@ -34,23 +37,29 @@ def admin_window():
         Label(admin_win, text="Nome Empresa").grid(row=1, column=0)
         Label(admin_win, text="Descricao Empresa").grid(row=2, column=0)
         Label(admin_win, text="Contato").grid(row=3, column=0)
+        Label(admin_win, text="Usuario").grid(row=4, column=0)
+        Label(admin_win, text="Senha").grid(row=5, column=0)
         
         empresa_id_var = StringVar()
-        nome_empresa_var = StringVar()
-        descricao_empresa_var = StringVar()
-        contato_var = StringVar()
+        usuario_var = StringVar()
+        senha_var = StringVar()
         
         empresa_id_entry = Entry(admin_win, textvariable=empresa_id_var)
         nome_empresa_entry = Entry(admin_win, textvariable=nome_empresa_var)
         descricao_empresa_entry = Entry(admin_win, textvariable=descricao_empresa_var)
         contato_entry = Entry(admin_win, textvariable=contato_var)
+        usuario_entry = Entry(admin_win, textvariable=usuario_var)
+        senha_entry = Entry(admin_win, textvariable=senha_var)
         
         empresa_id_entry.grid(row=0, column=1)
         nome_empresa_entry.grid(row=1, column=1)
         descricao_empresa_entry.grid(row=2, column=1)
         contato_entry.grid(row=3, column=1)
+        usuario_entry.grid(row=4, column=1)
+        senha_entry.grid(row=5, column=1 )
         
-        Button(admin_win, text="Add Empresa", command=add_empresa).grid(row=4, column=0, columnspan=2)
+        Button(admin_win, text="Add Empresa", command=lambda: add_empresa(nome_empresa_var.get(), descricao_empresa_var.get(), contato_var.get(), usuario_var.get(), senha_var.get())).grid(row=6, column=0, columnspan=2)
+
     else:
         messagebox.showerror(title='Acesso Negado', message='Você deve fazer o login como administrador para acessar esta área.')
 
@@ -78,26 +87,24 @@ def open_login_window():
     Button(login_win, text="Login", command=login).grid(row=2, column=0, columnspan=2)
 
 
-# Função para registrar um usuário
-def register_user():
-    username = username_var.get()
-    password = password_var.get()
-    cur.execute("SELECT COUNT(*) FROM CredenciaisEmpresa")
-    count = cur.fetchone()[0] + 1
-    cur.execute("INSERT INTO CredenciaisEmpresa (EmpresaID, NomeUsuario, Senha) VALUES (?, ?, ?)", (count, username, password))
-    cur.execute("INSERT INTO Empresa (EmpresaID) VALUES (?)", (count,))
-    con.commit()
-    messagebox.showinfo(title='Register User', message='User registered successfully')
-
 # Função para adicionar uma empresa
-def add_empresa():
-    empresa_id = empresa_id_var.get()
+def add_empresa(nome_empresa, descricao_empresa, contato, usuario, senha):
     nome_empresa = nome_empresa_var.get()
     descricao_empresa = descricao_empresa_var.get()
     contato = contato_var.get()
-    cur.execute("UPDATE Empresa SET NomeEmpresa=?, DescricaoEmpresa=?, Contato=? WHERE EmpresaID=?", (nome_empresa, descricao_empresa, contato, empresa_id))
+    usuario = usuario_var.get()  
+    senha = senha_var.get()  
+
+ 
+    cur.execute("INSERT INTO Empresa (NomeEmpresa, DescricaoEmpresa, Contato) VALUES (?, ?, ?)", (nome_empresa, descricao_empresa, contato))
+    empresa_id = cur.lastrowid  
+
+    
+    cur.execute("INSERT INTO CredenciaisEmpresa (EmpresaID, NomeUsuario, Senha) VALUES (?, ?, ?)", (empresa_id, usuario, senha))
+    
     con.commit()
-    print("Empresa added successfully")
+    print("Empresa adicionada")
+
 
 # Função para traduzir o feedback do português para o inglês
 def traduzir_para_ingles(texto):
@@ -135,6 +142,8 @@ def submit():
     # Mensagem com base na análise de sentimento
     messagebox.showinfo(title='Enviar Feedback', message=f'Obrigado pelo seu feedback, seus comentários foram enviados.\nAnálise de Sentimento: {sentimento}')
     clear()
+    
+    #FRONT
 
 root = Tk()
 frame_header = ttk.Frame(root)
