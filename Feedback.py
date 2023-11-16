@@ -139,6 +139,13 @@ def submit():
     
     sentimento = analisar_sentimento(comentario_ingles)
     
+    # Armazena a análise de sentimento
+    cur.execute(
+        "INSERT INTO Feedback  (Comentarios, Classificacao, Nome, EMAIL  ) VALUES (?, ?, ?, ?)", (comentario, sentimento, nome, email),
+        
+    )
+    con.commit()
+    
     # Mensagem com base na análise de sentimento
     messagebox.showinfo(title='Enviar Feedback', message=f'Obrigado pelo seu feedback, seus comentários foram enviados.\nAnálise de Sentimento: {sentimento}')
     clear()
@@ -172,7 +179,7 @@ nome_empresa_var = StringVar()
 descricao_empresa_var = StringVar()
 contato_var = StringVar()
 
-admin_button = ttk.Button(frame_content, text='Area dos Administradores', command=open_login_window).grid(row=5, column=1, sticky='w')
+admin_button = ttk.Button(frame_content, text='Acesso', command=open_login_window).grid(row=5, column=1, sticky='w')
 namelabel = ttk.Label(frame_content, text='Nome')
 namelabel.grid(row=0, column=0, padx=5, sticky='sw')
 entry_name = ttk.Entry(frame_content, width=18, font=('Arial', 14), textvariable=myvar)

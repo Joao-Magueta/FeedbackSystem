@@ -30,6 +30,8 @@ CREATE TABLE Feedback (
     ProdutoID INTEGER,
     Classificacao INTEGER,
     Comentarios TEXT,
+    Nome TEXT,
+    EMAIL TEXT,
     DataSubmissao TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ProdutoID) REFERENCES Produto(ID)
 );
