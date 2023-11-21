@@ -104,6 +104,68 @@ def add_empresa(nome_empresa, descricao_empresa, contato, usuario, senha):
     
     con.commit()
     print("Empresa adicionada")
+    
+    #Função do botão Ler Comentarios
+def ler_comentarios():
+    
+    cur.execute("SELECT * FROM Feedback")
+    comentarios = cur.fetchall()
+
+    
+    pagina = Toplevel(root)
+    pagina.title("Comentários")
+
+   
+    frame = Frame(pagina)
+    frame.pack()
+
+
+    label = Label(frame, text="Comentários")
+    label.grid(row=0, column=0)
+
+    
+    table = ttk.Treeview(frame)
+    table["columns"] = ["Nome", "Feedback", "Sentimento"]
+    table.column("#0", width=0, stretch=NO)
+    table.column("Nome", width=100)
+    table.column("Feedback", width=300)
+    table.column("Sentimento", width=100)
+
+    table.heading("Nome", text="Nome")
+    table.heading("Feedback", text="Feedback")
+    table.heading("Sentimento", text="Sentimento")
+
+    # não repetir linhas usando o ID
+    comentario_ids = set()
+
+ 
+    for comentario in comentarios:
+   
+        comentario_id = comentario[0]
+
+        
+        if comentario_id in comentario_ids:
+            continue
+
+        
+        comentario_ids.add(comentario_id)
+
+       
+        sentimento = comentario[2]
+
+        
+        comentario_texto = comentario[3]
+
+
+        nome = comentario[4]
+
+        # Adiciona a entrada na tabela
+        table.insert("", END, values=(nome, comentario_texto, sentimento))
+
+    table.grid(row=1, column=0, columnspan=2)
+
+    return pagina
+
 
 
 # Função para traduzir o feedback do português para o inglês
@@ -156,9 +218,9 @@ root = Tk()
 frame_header = ttk.Frame(root)
 frame_header.pack()
 
-logo = PhotoImage(file='logo.gif').subsample(2, 2)
-logolabel = ttk.Label(frame_header, text='logomarca', image=logo)
-logolabel.grid(row=0, column=0, rowspan=2)
+#logo = PhotoImage(file='logo.gif').subsample(2, 2)
+#logolabel = ttk.Label(frame_header, text='logomarca', image=logo)
+#logolabel.grid(row=0, column=0, rowspan=2)
 headerlabel = ttk.Label(frame_header, text='FEEDBACK DO CLIENTE', foreground='orange',
                         font=('Arial', 24))
 headerlabel.grid(row=0, column=1)
@@ -179,7 +241,8 @@ nome_empresa_var = StringVar()
 descricao_empresa_var = StringVar()
 contato_var = StringVar()
 
-admin_button = ttk.Button(frame_content, text='Acesso', command=open_login_window).grid(row=5, column=1, sticky='w')
+admin_button = ttk.Button(frame_content, text='Acesso Administradores', command=open_login_window).grid(row=5, column=1, sticky='w')
+botao_leitura = ttk.Button(frame_content, text="Ler Comentários", command=ler_comentarios).grid(row=6, column=1, columnspan=2)
 namelabel = ttk.Label(frame_content, text='Nome')
 namelabel.grid(row=0, column=0, padx=5, sticky='sw')
 entry_name = ttk.Entry(frame_content, width=18, font=('Arial', 14), textvariable=myvar)
