@@ -1,3 +1,4 @@
+import tkinter as tk
 from tkinter import *
 from tkinter import ttk, messagebox
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
@@ -146,16 +147,12 @@ def ler_comentarios():
         
         if comentario_id in comentario_ids:
             continue
-
-        
+ 
         comentario_ids.add(comentario_id)
-
-       
+  
         sentimento = comentario[2]
 
-        
         comentario_texto = comentario[3]
-
 
         nome = comentario[4]
 
@@ -163,9 +160,21 @@ def ler_comentarios():
         table.insert("", END, values=(nome, comentario_texto, sentimento))
 
     table.grid(row=1, column=0, columnspan=2)
+    
+    #Evento double click para mostrar o comentario completo
+    
+    def on_double_click(event):
+    # Obtém a ID do item selecionado
+        item_id = table.selection()[0]
+    
+        item_data = table.item(item_id)["values"]
+
+        popup = tk.messagebox.showinfo("Comentário", f"Autor: {item_data[0]}\n\nComentário: {item_data[1]}")
+
+
+    table.bind("<Double-Button-1>", on_double_click)
 
     return pagina
-
 
 
 # Função para traduzir o feedback do português para o inglês
