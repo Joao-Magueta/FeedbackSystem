@@ -131,6 +131,8 @@ def ler_comentarios():
     table.column("Nome", width=100)
     table.column("Feedback", width=300)
     table.column("Sentimento", width=100)
+    botao_detalhes = Button(frame, text="Mais Detalhes", command=mostrar_mais_detalhes)
+    botao_detalhes.grid(row=2, column=0, columnspan=2)
 
     table.heading("Nome", text="Nome")
     table.heading("Feedback", text="Feedback")
@@ -174,6 +176,63 @@ def ler_comentarios():
 
     table.bind("<Double-Button-1>", on_double_click)
 
+#Botão mais detalhes
+def mostrar_mais_detalhes():
+    # Leitura e contagem de palavras-chave
+    palavras_chave_positivas = {}  # Dicionário para armazenar as palavras-chave positivas e suas contagens
+    palavras_chave_negativas = {}  # Dicionário para armazenar as palavras-chave negativas e suas contagens
+
+    cur.execute("SELECT ID, Comentarios, Classificacao FROM Feedback")
+    comentarios = cur.fetchall()
+
+    for id_comentario, comentario, classificacao in comentarios:
+        
+      if classificacao != "neutros":
+        # Separa as palavras do comentário e converte para minúsculas
+        palavras = comentario.lower().split()
+
+        # Define o dicionário de destino com base na classificação do feedback
+        if classificacao == "positivos":
+            palavras_chave = palavras_chave_positivas
+        else:
+            palavras_chave = palavras_chave_negativas
+
+        # Contagem das palavras-chave
+        for palavra in set(palavras):
+            if palavra not in palavras_chave:
+                palavras_chave[palavra] = 0
+            palavras_chave[palavra] += 1
+
+
+    # Criação da janela
+    pagina = Toplevel(root)
+    pagina.title("Detalhes dos Feedbacks")
+
+    # Criação das tabelas de positivos e negativos
+    table_positivos = ttk.Treeview(pagina)
+    table_positivos["columns"] = ["Palavra", "Contagem"]
+    table_positivos.column("#0", width=0, stretch=NO)
+    table_positivos.column("Palavra", width=150)
+    table_positivos.column("Contagem", width=100)
+    table_positivos.heading("Palavra", text="Palavra")
+    table_positivos.heading("Contagem", text="Contagem")
+    table_positivos.grid(row=0, column=0, padx=10, pady=10)
+    for palavra, contagem in palavras_chave_positivas.items():
+        if contagem >= 5:  # Exibe apenas as palavras com pelo menos 5 repetições
+            table_positivos.insert("", END, values=(palavra, contagem))  # Adicione à tabela de positivos
+    
+    table_negativos = ttk.Treeview(pagina)
+    table_negativos["columns"] = ["Palavra", "Contagem"]
+    table_negativos.column("#0", width=0, stretch=NO)
+    table_negativos.column("Palavra", width=150)
+    table_negativos.column("Contagem", width=100)
+    table_negativos.heading("Palavra", text="Palavra")
+    table_negativos.heading("Contagem", text="Contagem")
+    table_negativos.grid(row=0, column=1, padx=10, pady=10)
+    for palavra, contagem in palavras_chave_negativas.items():
+        if contagem >= 5:  # Exibe apenas as palavras com pelo menos 5 repetições
+            table_negativos.insert("", END, values=(palavra, contagem))  # Adicione à tabela de negativos
+    
     return pagina
 
 
@@ -250,7 +309,7 @@ nome_empresa_var = StringVar()
 descricao_empresa_var = StringVar()
 contato_var = StringVar()
 
-admin_button = ttk.Button(frame_content, text='Acesso Administradores', command=open_login_window).grid(row=5, column=1, sticky='w')
+#admin_button = ttk.Button(frame_content, text='Acesso Administradores', command=open_login_window).grid(row=5, column=1, sticky='w')
 botao_leitura = ttk.Button(frame_content, text="Ler Comentários", command=ler_comentarios).grid(row=6, column=1, columnspan=2)
 namelabel = ttk.Label(frame_content, text='Nome')
 namelabel.grid(row=0, column=0, padx=5, sticky='sw')
