@@ -1,0 +1,44 @@
+-- Tabela para Empresa
+CREATE TABLE Empresa (
+    EmpresaID INTEGER PRIMARY KEY AUTOINCREMENT,
+    NomeEmpresa NVARCHAR(255),
+    DescricaoEmpresa TEXT,
+    Contato NVARCHAR(255)
+);
+
+-- Tabela para Credenciais da Empresa
+CREATE TABLE CredenciaisEmpresa (
+    EmpresaID INTEGER,
+    NomeUsuario NVARCHAR(255),
+    Senha NVARCHAR(255),
+    FOREIGN KEY(EmpresaID) REFERENCES Empresa(EmpresaID)
+);
+
+
+-- Tabela para Produto
+CREATE TABLE Produto (
+    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    NomeProduto TEXT,
+    DescricaoProduto TEXT,
+    EmpresaID INTEGER,
+    FOREIGN KEY (EmpresaID) REFERENCES Empresa(ID)
+);
+
+-- Tabela para Feedback
+CREATE TABLE Feedback (
+    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    ProdutoID INTEGER,
+    Classificacao INTEGER,
+    Comentarios TEXT,
+    Nome TEXT,
+    EMAIL TEXT,
+    DataSubmissao TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ProdutoID) REFERENCES Produto(ID)
+);
+
+-- Tabela para Administrador
+CREATE TABLE Administrador (
+    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    NomeUsuario TEXT,
+    Senha TEXT
+);
